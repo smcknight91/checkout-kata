@@ -3,6 +3,7 @@ using checkout_kata.Service;
 using NUnit.Framework;
 using System;
 using checkout_kata.Models;
+using checkout_kata.Interface;
 
 namespace checkout_kataTests
 {
@@ -108,6 +109,45 @@ namespace checkout_kataTests
             //Assert
             Assert.That(totalPrice, Is.Not.Null);
             return totalPrice;
+        }
+
+        [Test]
+        public void GivenDuplicateSkuAndOffer_WhenGetTotalPrice_ThenThrowException()
+        {
+            //Arrange
+            //Act
+            //Assert
+            Assert.That(() =>
+                {
+                    _checkout.AddMultibuyConfigurations("A", new MultibuyModel { ItemCount = 3, TotalPrice = 30 });
+                },
+                Throws.TypeOf<Exception>()
+                    .With.Message.EqualTo("Multibuy model exists already for item count for sku: A"));
+
+        }
+
+        [Test]
+        public void GivenDuplicatePriceConfiguration_WhenGetTotalPrice_ThenThrowException()
+        {
+            //Arrange
+            //Act
+            //Assert
+            Assert.That(() =>
+                {
+                    _checkout.AddConfigurations(new PriceConfigurationModel
+                    {
+                        SKU = "A",
+                        Price = 10,
+                        Multibuy =
+                        [
+                            new MultibuyModel { ItemCount = 3, TotalPrice = 130 },
+                            new MultibuyModel { ItemCount = 6, TotalPrice = 200 }
+                        ]
+                    });
+                },
+                Throws.TypeOf<Exception>()
+                    .With.Message.EqualTo("Error - SKU already exists within configuration."));
+
         }
     }
 }
