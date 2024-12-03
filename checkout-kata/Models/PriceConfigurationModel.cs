@@ -4,6 +4,6 @@
     {
         public int Price { get; set; }
         public string SKU { get; set; }
-        public MultibuyModel? Multibuy { get; set; }
+        public List<MultibuyModel>? Multibuy { get; set; }
     }
 }

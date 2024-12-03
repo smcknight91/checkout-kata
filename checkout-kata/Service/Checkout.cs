@@ -10,11 +10,11 @@ namespace checkout_kata.Service
         private readonly List<PriceConfigurationModel> _priceConfigurations =
         [
             new PriceConfigurationModel
-                { SKU = "A", Price = 50, Multibuy = new MultibuyModel { ItemCount = 3, TotalPrice = 130 } },
+                { SKU = "A", Price = 50, Multibuy = [new MultibuyModel { ItemCount = 3, TotalPrice = 130 }, new MultibuyModel { ItemCount = 6, TotalPrice = 200 }]},
             new PriceConfigurationModel
-                { SKU = "B", Price = 30, Multibuy = new MultibuyModel { ItemCount = 2, TotalPrice = 45 } },
+                { SKU = "B", Price = 30, Multibuy = [new MultibuyModel { ItemCount = 2, TotalPrice = 45 }, new MultibuyModel { ItemCount = 4, TotalPrice = 30 }]},
             new PriceConfigurationModel
-                { SKU = "C", Price = 20, Multibuy = new MultibuyModel { ItemCount = 6, TotalPrice = 100 } },
+                { SKU = "C", Price = 20, Multibuy = [new MultibuyModel { ItemCount = 6, TotalPrice = 100 }]},
             new PriceConfigurationModel { SKU = "D", Price = 15, Multibuy = null }
         ];
 
@@ -44,23 +44,26 @@ namespace checkout_kata.Service
             foreach (var sku in ScannedItemDetails.Keys)
             {
                 var priceConfig = _priceConfigurations.Find(pc => pc.SKU == sku);
-
-                if (priceConfig == null) continue;
+                var remainingItemCount = ScannedItemDetails[sku];
 
                 if (priceConfig.Multibuy != null)
                 {
-                    var multibuyCount = ScannedItemDetails[sku] / priceConfig.Multibuy.ItemCount;
-                    var remainingItemCount = ScannedItemDetails[sku] % priceConfig.Multibuy.ItemCount;
-
-                    totalPrice += multibuyCount * priceConfig.Multibuy.TotalPrice +
-                                  remainingItemCount * priceConfig.Price;
+                    var selectedMultibuy = GetMultibuyModel(priceConfig, remainingItemCount);
+                    while (selectedMultibuy != null)
+                    {
+                        totalPrice += selectedMultibuy.TotalPrice;
+                        remainingItemCount -= selectedMultibuy.ItemCount;
+                        selectedMultibuy = GetMultibuyModel(priceConfig, remainingItemCount);
+                    }
                 }
-                else
-                {
-                    totalPrice += ScannedItemDetails[sku] * priceConfig.Price;
-                }
+                totalPrice += remainingItemCount * priceConfig.Price;
             }
             return totalPrice;
+        }
+
+        private MultibuyModel? GetMultibuyModel(PriceConfigurationModel priceConfig, int remainingItemCount)
+        {
+            return priceConfig.Multibuy.Where(pc => pc.ItemCount <= remainingItemCount).OrderByDescending(pc => pc.ItemCount).FirstOrDefault();
         }
     }
 }

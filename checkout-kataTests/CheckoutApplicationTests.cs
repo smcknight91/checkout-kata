@@ -119,7 +119,7 @@ namespace checkout_kataTests
 
             //Assert
             Assert.That(totalPrice, Is.Not.Null);
-            Assert.That(totalPrice, Is.EqualTo(260));
+            Assert.That(totalPrice, Is.EqualTo(200));
         }
 
         [Test]
@@ -150,6 +150,21 @@ namespace checkout_kataTests
             //Assert
             Assert.That(totalPrice, Is.Not.Null);
             Assert.That(totalPrice, Is.EqualTo(75));
+        }
+
+        [Test]
+        [TestCase("ABABAABBAAA")]
+        public void GivenSkuWithMultipleOffersAndOneRemaining_WhenGetTotalPrice_ThenReturnCorrectTotalPrice(string skus)
+        {
+            //Arrange
+            HelperExtensions.ScanSkus(_checkout, skus);
+
+            //Act
+            var totalPrice = _checkout.GetTotalPrice();
+
+            //Assert
+            Assert.That(totalPrice, Is.Not.Null);
+            Assert.That(totalPrice, Is.EqualTo(280));
         }
     }
 }
