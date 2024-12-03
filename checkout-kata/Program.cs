@@ -12,7 +12,8 @@ public class CheckoutApplication
 
     public static void Process(string skus)
     {
-        ICheckout checkout = new Checkout();
+        //Inbuilt configurations for test purpose
+        ICheckout checkout = new CheckoutTest();
 
         if (string.IsNullOrEmpty(skus))
         {

@@ -3,47 +3,20 @@ using checkout_kata.Models;
 
 namespace checkout_kata.Service
 {
-    public class Checkout : ICheckout
+    public class CheckoutTest : ICheckout
     {
         public Dictionary<string, int> ScannedItemDetails { get; } = new();
 
-        private readonly List<PriceConfigurationModel> _priceConfigurations = [];
-
-        public void AddConfigurations(List<PriceConfigurationModel> priceConfigurationList)
-        {
-            foreach (var priceConfig in priceConfigurationList)
-            {
-                AddConfigurations(priceConfig);
-            }
-        }
-
-        public void AddConfigurations(PriceConfigurationModel priceConfigurationModel)
-        {
-            if (_priceConfigurations.Any(pc => pc.SKU == priceConfigurationModel.SKU))
-            {
-                throw new Exception("Error - SKU already exists within configuration.");
-            }
-
-            _priceConfigurations.Add(priceConfigurationModel);
-        }
-
-        public void AddMultibuyConfigurations(string sku, MultibuyModel multiBuyModel)
-        {
-            var priceConfigurationModel = _priceConfigurations.Find(priceConfig => priceConfig.SKU == sku);
-            
-            if (priceConfigurationModel == null)
-            {
-                Console.WriteLine($"Error - Scanned {sku} does not exist.");
-                throw new KeyNotFoundException("Scanned SKU does not exist.");
-            }
-
-            if (priceConfigurationModel.Multibuy.Any(pc => pc.ItemCount == multiBuyModel.ItemCount))
-            {
-                throw new Exception($"Multibuy model exists already for item count for sku: {sku}");
-            }
-
-            priceConfigurationModel.Multibuy.Add(multiBuyModel);
-        }
+        private readonly List<PriceConfigurationModel> _priceConfigurations =
+        [
+            new PriceConfigurationModel
+                { SKU = "A", Price = 50, Multibuy = [new MultibuyModel { ItemCount = 3, TotalPrice = 130 }, new MultibuyModel { ItemCount = 6, TotalPrice = 200 }]},
+            new PriceConfigurationModel
+                { SKU = "B", Price = 30, Multibuy = [new MultibuyModel { ItemCount = 2, TotalPrice = 45 }, new MultibuyModel { ItemCount = 4, TotalPrice = 30 }]},
+            new PriceConfigurationModel
+                { SKU = "C", Price = 20, Multibuy = [new MultibuyModel { ItemCount = 6, TotalPrice = 100 }]},
+            new PriceConfigurationModel { SKU = "D", Price = 15, Multibuy = null }
+        ];
 
         public void Scan(string item)
         {

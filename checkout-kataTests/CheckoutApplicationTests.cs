@@ -2,6 +2,7 @@
 using checkout_kata.Service;
 using NUnit.Framework;
 using System;
+using checkout_kata.Models;
 
 namespace checkout_kataTests
 {
@@ -14,6 +15,33 @@ namespace checkout_kataTests
         public void Init()
         {
             _checkout = new Checkout();
+            _checkout.AddConfigurations([
+                new PriceConfigurationModel
+                {
+                    SKU = "A", Price = 50,
+                    Multibuy =
+                    [
+                        new MultibuyModel { ItemCount = 3, TotalPrice = 130 },
+                        new MultibuyModel { ItemCount = 6, TotalPrice = 200 }
+                    ]
+                },
+                new PriceConfigurationModel
+                {
+                    SKU = "B", Price = 30,
+                    Multibuy =
+                    [
+                        new MultibuyModel { ItemCount = 4, TotalPrice = 30 }
+                    ]
+                },
+                new PriceConfigurationModel
+                    { SKU = "C", Price = 20, Multibuy = 
+                        [
+                            new MultibuyModel { ItemCount = 6, TotalPrice = 100 }
+                        ]
+                    },
+                new PriceConfigurationModel { SKU = "D", Price = 15, Multibuy = null }
+            ]);
+            _checkout.AddMultibuyConfigurations("B", new MultibuyModel { ItemCount = 2, TotalPrice = 45 });
         }
 
         [Test]
