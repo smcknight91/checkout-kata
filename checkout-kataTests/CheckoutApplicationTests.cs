@@ -1,7 +1,7 @@
 ﻿using checkout_kata;
+using checkout_kata.Service;
 using NUnit.Framework;
 using System;
-using checkout_kata.DataModels;
 
 namespace checkout_kataTests
 {
@@ -17,23 +17,35 @@ namespace checkout_kataTests
         }
 
         [Test]
+        [TestCase("")]
+        public void GivenNoSkus_WhenProcessRan_ThenThrowNullArgumentException(string skus)
+        {
+            //Arrange
+            //Act
+            //Assert
+            Assert.That(() =>
+                {
+                    CheckoutApplication.Process(skus);
+                },
+                Throws.TypeOf<ArgumentNullException>()
+                    .With.Message.EqualTo("Skus can't be null or empty."));
+        }
+
+        [Test]
         [TestCase("ABCM")]
         [TestCase("ABCZ")]
         [TestCase("TCA")]
-        public void GivenInvalidSku_WhenProcessRan_ThenThrowKeyNotFoundException(string skus)
+        public void GivenInvalidSku_WhenScan_ThenThrowKeyNotFoundException(string skus)
         {
             //Arrange
             //Act
             //Assert
             Assert.That(() =>
             {
-                foreach (var sku in skus)
-                {
-                    _checkout.Scan(sku.ToString());
-                }
+                HelperExtensions.ScanSkus(_checkout, skus);
             },
                 Throws.TypeOf<KeyNotFoundException>()
-                    .With.Message.EqualTo($"Scanned SKU does not exist."));
+                    .With.Message.EqualTo("Scanned SKU does not exist."));
         }
 
         [Test]
@@ -43,32 +55,101 @@ namespace checkout_kataTests
         public void GivenValidSku_WhenScan_ThenAddToScannedItems(string skus)
         {
             //Arrange
-            //Act
-            foreach (var sku in skus)
-            {
-                _checkout.Scan(sku.ToString());
-            }
+            HelperExtensions.ScanSkus(_checkout, skus);
 
+            //Act
             //Assert
-            Assert.That(_checkout.scannedItemCount, Is.Not.Null);
+            Assert.That(_checkout.ScannedItemDetails, Is.Not.Null);
         }
 
         [Test]
         [TestCase("ABC")]
-        public void GivenValidSku_WhenGetTotalCount_ThenReturnCorrectTotalPrice(string skus)
+        public void GivenValidSku_WhenGetTotalPrice_ThenReturnCorrectTotalPrice(string skus)
         {
             //Arrange
-            //Act
-            foreach (var sku in skus)
-            {
-                _checkout.Scan(sku.ToString());
-            }
+            HelperExtensions.ScanSkus(_checkout, skus);
 
+            //Act
             var totalPrice = _checkout.GetTotalPrice();
 
             //Assert
             Assert.That(totalPrice, Is.Not.Null);
             Assert.That(totalPrice, Is.EqualTo(100));
+        }
+
+        [Test]
+        [TestCase("AAA")]
+        public void GivenValidSkuOffer_WhenGetTotalPrice_ThenReturnCorrectTotalPrice(string skus)
+        {
+            //Arrange
+            HelperExtensions.ScanSkus(_checkout, skus);
+
+            //Act
+            var totalPrice = _checkout.GetTotalPrice();
+
+            //Assert
+            Assert.That(totalPrice, Is.Not.Null);
+            Assert.That(totalPrice, Is.EqualTo(130));
+        }
+
+        [Test]
+        [TestCase("AAAA")]
+        public void GivenValidSkuOfferWthAdditionalSku_WhenGetTotalPrice_ThenReturnCorrectTotalPrice(string skus)
+        {
+            //Arrange
+            HelperExtensions.ScanSkus(_checkout, skus);
+
+            //Act
+            var totalPrice = _checkout.GetTotalPrice();
+
+            //Assert
+            Assert.That(totalPrice, Is.Not.Null);
+            Assert.That(totalPrice, Is.EqualTo(180));
+        }
+
+        [Test]
+        [TestCase("AAAAAA")]
+        public void GivenValidDoubleSkuOffer_WhenGetTotalPrice_ThenReturnCorrectTotalPrice(string skus)
+        {
+            //Arrange
+            HelperExtensions.ScanSkus(_checkout, skus);
+
+            //Act
+            var totalPrice = _checkout.GetTotalPrice();
+
+            //Assert
+            Assert.That(totalPrice, Is.Not.Null);
+            Assert.That(totalPrice, Is.EqualTo(260));
+        }
+
+        [Test]
+        [TestCase("AAAB")]
+        public void GivenValidSkuOfferWithNonOfferSku_WhenGetTotalPrice_ThenReturnCorrectTotalPrice(string skus)
+        {
+            //Arrange
+            HelperExtensions.ScanSkus(_checkout, skus);
+
+            //Act
+            var totalPrice = _checkout.GetTotalPrice();
+
+            //Assert
+            Assert.That(totalPrice, Is.Not.Null);
+            Assert.That(totalPrice, Is.EqualTo(160));
+        }
+
+        [Test]
+        [TestCase("DDDDD")]
+        public void GivenSkuWithNullOffer_WhenGetTotalPrice_ThenReturnCorrectTotalPrice(string skus)
+        {
+            //Arrange
+            HelperExtensions.ScanSkus(_checkout, skus);
+
+            //Act
+            var totalPrice = _checkout.GetTotalPrice();
+
+            //Assert
+            Assert.That(totalPrice, Is.Not.Null);
+            Assert.That(totalPrice, Is.EqualTo(75));
         }
     }
 }

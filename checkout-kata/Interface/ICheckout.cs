@@ -1,4 +1,4 @@
-﻿namespace checkout_kata.DataModels
+﻿namespace checkout_kata.Interface
 {
     public interface ICheckout
     {
