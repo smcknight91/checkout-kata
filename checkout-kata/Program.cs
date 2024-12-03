@@ -1,4 +1,5 @@
-﻿using checkout_kata.Service;
+﻿using checkout_kata.Interface;
+using checkout_kata.Service;
 
 namespace checkout_kata;
 
@@ -6,12 +7,12 @@ public class CheckoutApplication
 {
     static void Main(string[] args)
     {
-        Process("!!!!");
+        Process("ABCD");
     }
 
     public static void Process(string skus)
     {
-        var checkout = new Checkout();
+        ICheckout checkout = new Checkout();
 
         if (string.IsNullOrEmpty(skus))
         {

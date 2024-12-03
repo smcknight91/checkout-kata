@@ -5,7 +5,7 @@ namespace checkout_kata.Service
 {
     public class Checkout : ICheckout
     {
-        public Dictionary<string, int> ScannedItemDetails = new();
+        public Dictionary<string, int> ScannedItemDetails { get; } = new();
 
         private readonly List<PriceConfigurationModel> _priceConfigurations =
         [
