@@ -1,10 +1,17 @@
 ﻿using checkout_kata.Interface;
 using checkout_kata.Models;
+using Microsoft.Extensions.Logging;
 
 namespace checkout_kata.Service
 {
     public class CheckoutTest : ICheckout
     {
+        private readonly ILogger _logger;
+        public CheckoutTest(ILogger<CheckoutTest> logger)
+        {
+            _logger = logger;
+        }
+
         public Dictionary<string, int> ScannedItemDetails { get; } = new();
 
         private readonly List<PriceConfigurationModel> _priceConfigurations =
@@ -22,7 +29,7 @@ namespace checkout_kata.Service
         {
             if (_priceConfigurations.All(priceConfig => priceConfig.SKU != item))
             {
-                Console.WriteLine($"Error - Scanned {item} does not exist.");
+                _logger.LogError($"Error - Scanned {item} does not exist.");
                 throw new KeyNotFoundException("Scanned SKU does not exist.");
             }
 
@@ -34,8 +41,7 @@ namespace checkout_kata.Service
             {
                 ScannedItemDetails[item] = 1;
             }
-
-            Console.WriteLine($"Added {item} to scannedItemCount.");
+            _logger.LogInformation($"Added {item} to scannedItemCount.");
         }
 
         public int GetTotalPrice()

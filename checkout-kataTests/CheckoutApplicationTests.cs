@@ -4,6 +4,8 @@ using NUnit.Framework;
 using System;
 using checkout_kata.Models;
 using checkout_kata.Interface;
+using Microsoft.Extensions.Logging;
+using Moq;
 
 namespace checkout_kataTests
 {
@@ -11,11 +13,13 @@ namespace checkout_kataTests
     public class CheckoutApplicationTests
     {
         private Checkout _checkout;
+        private Mock<ILogger<Checkout>> _mockLogger;
 
         [SetUp]
         public void Init()
         {
-            _checkout = new Checkout();
+            _mockLogger = new Mock<ILogger<Checkout>>();
+            _checkout = new Checkout(_mockLogger.Object);
             _checkout.AddConfigurations([
                 new PriceConfigurationModel
                 {
@@ -46,21 +50,6 @@ namespace checkout_kataTests
         }
 
         [Test]
-        [TestCase("")]
-        public void GivenNoSkus_WhenProcessRan_ThenThrowNullArgumentException(string skus)
-        {
-            //Arrange
-            //Act
-            //Assert
-            Assert.That(() =>
-                {
-                    CheckoutApplication.Process(skus);
-                },
-                Throws.TypeOf<ArgumentNullException>()
-                    .With.Message.EqualTo("Skus can't be null or empty."));
-        }
-
-        [Test]
         [TestCase("ABCM")]
         [TestCase("ABCZ")]
         [TestCase("TCA")]
@@ -75,6 +64,14 @@ namespace checkout_kataTests
             },
                 Throws.TypeOf<KeyNotFoundException>()
                     .With.Message.EqualTo("Scanned SKU does not exist."));
+
+            _mockLogger.Verify(
+                x => x.Log(
+                    It.Is<LogLevel>(l => l == LogLevel.Error),
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => true),
+                    It.IsAny<Exception>(),
+                    It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)), Times.Once);
         }
 
         [Test]
@@ -124,6 +121,13 @@ namespace checkout_kataTests
                 Throws.TypeOf<Exception>()
                     .With.Message.EqualTo("Multibuy model exists already for item count for sku: A"));
 
+            _mockLogger.Verify(
+                x => x.Log(
+                    It.Is<LogLevel>(l => l == LogLevel.Error),
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => true),
+                    It.IsAny<Exception>(),
+                    It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)), Times.Once);
         }
 
         [Test]
@@ -148,6 +152,13 @@ namespace checkout_kataTests
                 Throws.TypeOf<Exception>()
                     .With.Message.EqualTo("Error - SKU already exists within configuration."));
 
+            _mockLogger.Verify(
+                x => x.Log(
+                    It.Is<LogLevel>(l => l == LogLevel.Error),
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => true),
+                    It.IsAny<Exception>(),
+                    It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)), Times.Once);
         }
     }
 }

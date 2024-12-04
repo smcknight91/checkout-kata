@@ -1,10 +1,17 @@
 ﻿using checkout_kata.Interface;
 using checkout_kata.Models;
+using Microsoft.Extensions.Logging;
 
 namespace checkout_kata.Service
 {
     public class Checkout : ICheckout
     {
+        private readonly ILogger _logger;
+        public Checkout(ILogger<Checkout> logger)
+        {
+            _logger = logger;
+        }
+
         public Dictionary<string, int> ScannedItemDetails { get; } = new();
 
         private readonly List<PriceConfigurationModel> _priceConfigurations = [];
@@ -21,6 +28,7 @@ namespace checkout_kata.Service
         {
             if (_priceConfigurations.Any(pc => pc.SKU == priceConfigurationModel.SKU))
             {
+                _logger.LogError("Error - SKU already exists within configuration.");
                 throw new Exception("Error - SKU already exists within configuration.");
             }
 
@@ -33,12 +41,13 @@ namespace checkout_kata.Service
             
             if (priceConfigurationModel == null)
             {
-                Console.WriteLine($"Error - Scanned {sku} does not exist.");
+                _logger.LogError($"Error - Scanned {sku} does not exist.");
                 throw new KeyNotFoundException("Scanned SKU does not exist.");
             }
 
             if (priceConfigurationModel.Multibuy.Any(pc => pc.ItemCount == multiBuyModel.ItemCount))
             {
+                _logger.LogError($"Multibuy model exists already for item count for sku: {sku}");
                 throw new Exception($"Multibuy model exists already for item count for sku: {sku}");
             }
 
@@ -49,7 +58,7 @@ namespace checkout_kata.Service
         {
             if (_priceConfigurations.All(priceConfig => priceConfig.SKU != item))
             {
-                Console.WriteLine($"Error - Scanned {item} does not exist.");
+                _logger.LogError($"Error - Scanned {item} does not exist.");
                 throw new KeyNotFoundException("Scanned SKU does not exist.");
             }
 
@@ -61,8 +70,7 @@ namespace checkout_kata.Service
             {
                 ScannedItemDetails[item] = 1;
             }
-
-            Console.WriteLine($"Added {item} to scannedItemCount.");
+            _logger.LogInformation($"Added {item} to scannedItemCount.");
         }
 
         public int GetTotalPrice()
